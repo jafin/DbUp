@@ -1,0 +1,7 @@
+﻿DROP PROCEDURE IF EXISTS My_StoreProc;
+
+CREATE PROCEDURE My_StoreProc(strEmail VARCHAR(255))
+BEGIN
+SELECT id FROM table_name WHERE email = strEmail
+ORDER BY id DESC limit 1
+END;
