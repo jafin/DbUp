@@ -4,29 +4,12 @@ using Xunit;
 
 namespace DbUp.Tests.SQLite
 {
+    // ReSharper disable once UnusedMember.Global
     public class DatabaseSupportTests : Tests.DatabaseSupportTests
     {
         public DatabaseSupportTests()
         {
             base.SetCallerFilePath();
-        }
-
-        [Fact]
-        public override void VerifyBasicSupport()
-        {
-            base.VerifyBasicSupport();
-        }
-
-        [Fact]
-        public override void VerifyVariableSubstitutions()
-        {
-            base.VerifyVariableSubstitutions();
-        }
-
-        [Fact]
-        public override void VerifyJournalCreationIfNameChanged()
-        {
-            base.VerifyJournalCreationIfNameChanged();
         }
 
         public override ExampleTable DatabaseExampleTable => new ExampleTable("Deploy to")

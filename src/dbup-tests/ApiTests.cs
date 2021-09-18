@@ -28,7 +28,7 @@ namespace DbUp.Tests
         [InlineData(typeof(SqlCeExtensions))]
         [InlineData(typeof(SqlAnywhereExtensions))]
 #endif
-        public void NoPublicApiChanges(Type type, bool differByFramework = false)
+        public virtual void NoPublicApiChanges(Type type, bool differByFramework = false, string approvalsFilePath = null)
         {
             var assembly = type.Assembly;
             var result = GetPublicApi(assembly);
@@ -40,7 +40,14 @@ namespace DbUp.Tests
                 .UsingExtension("cs")
                 .UsingNamer(m => Path.Combine(Path.GetDirectoryName(m.FilePath), "ApprovalFiles", assembly.GetName().Name + approvalPostfix));
 
-            this.Assent(result, config);
+            if (!string.IsNullOrEmpty(approvalsFilePath))
+            {
+                this.Assent(result, config, filePath: approvalsFilePath);
+            }
+            else
+            {
+                this.Assent(result, config);
+            }
         }
 
         string GetPublicApi(Assembly assembly)
