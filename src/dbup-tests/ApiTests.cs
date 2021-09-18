@@ -20,8 +20,6 @@ namespace DbUp.Tests
         [Theory]
         [InlineData(typeof(UpgradeEngine))]
         [InlineData(typeof(SqlServerExtensions), true)]
-        [InlineData(typeof(SQLiteExtensions))]
-        [InlineData(typeof(MySqlExtensions))]
         [InlineData(typeof(OracleExtensions))]
         [InlineData(typeof(PostgresqlExtensions))]
         [InlineData(typeof(RedshiftExtensions))]

@@ -21,7 +21,6 @@
     <ProjectReference Include="..\dbup-oracle\dbup-oracle.csproj" />
     <ProjectReference Include="..\dbup-redshift\dbup-redshift.csproj" />
     <ProjectReference Include="..\dbup-sqlserver\dbup-sqlserver.csproj" />
-    <ProjectReference Include="..\dbup-sqlite\dbup-sqlite.csproj" />
     <ProjectReference Include="..\dbup-mysql\dbup-mysql.csproj" />
     <ProjectReference Include="..\dbup-postgresql\dbup-postgresql.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />

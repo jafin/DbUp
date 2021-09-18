@@ -4,7 +4,7 @@ using System.IO;
 using Shouldly;
 using Xunit;
 
-namespace DbUp.Tests.Support.SQLite
+namespace DbUp.Tests.SQLite
 {
     public class SQLiteSupportTests
     {
@@ -13,7 +13,7 @@ namespace DbUp.Tests.Support.SQLite
         [Fact]
         public void CanUseSQLite()
         {
-            var connectionString = string.Format("Data Source={0}; Version=3;", dbFilePath);
+            var connectionString = $"Data Source={dbFilePath}; Version=3;";
 
             if (!File.Exists(dbFilePath))
             {

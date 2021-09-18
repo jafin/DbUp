@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Assent;
 using DbUp.Builder;
 using DbUp.Engine;
 using DbUp.Engine.Transactions;
 using DbUp.Oracle;
-using DbUp.SQLite;
 using DbUp.SqlServer;
 using DbUp.Tests.TestInfrastructure;
 using Shouldly;
@@ -31,9 +31,15 @@ namespace DbUp.Tests
         DatabaseUpgradeResult result;
         Func<UpgradeEngineBuilder, string, string, UpgradeEngineBuilder> addCustomNamedJournalToBuilder;
         CaptureLogsLogger logger;
+        private string approvalsFilePath;
+
+        public DatabaseSupportTests()
+        {
+            SetCallerFilePath();
+        }
 
         [Fact]
-        public void VerifyBasicSupport()
+        public virtual void VerifyBasicSupport()
         {
             ExampleAction deployTo = null;
             this
@@ -48,7 +54,7 @@ namespace DbUp.Tests
         }
 
         [Fact]
-        public void VerifyVariableSubstitutions()
+        public virtual void VerifyVariableSubstitutions()
         {
             ExampleAction deployTo = null;
             this
@@ -64,7 +70,7 @@ namespace DbUp.Tests
         }
 
         [Fact]
-        public void VerifyJournalCreationIfNameChanged()
+        public virtual void VerifyJournalCreationIfNameChanged()
         {
             ExampleAction deployTo = null;
             this
@@ -79,16 +85,11 @@ namespace DbUp.Tests
                 .BDDfy();
         }
 
-        ExampleTable DatabaseExampleTable => new ExampleTable("Deploy to")
+        public virtual ExampleTable DatabaseExampleTable => new ExampleTable("Deploy to")
                 {
                     new ExampleAction("Sql Server", Deploy(to => to.SqlDatabase(string.Empty), (builder, schema, tableName) =>
                     {
                         builder.Configure(c => c.Journal = new SqlTableJournal(() => c.ConnectionManager, () => c.Log, schema, tableName));
-                        return builder;
-                    })),
-                    new ExampleAction("SQLite", Deploy(to => to.SQLiteDatabase(string.Empty), (builder, schema, tableName) =>
-                    {
-                        builder.Configure(c => c.Journal = new SQLiteTableJournal(() => c.ConnectionManager, () => c.Log, tableName));
                         return builder;
                     })),
                     new ExampleAction("Oracle", Deploy(to => to.OracleDatabaseWithDefaultDelimiter(string.Empty), (builder, schema, tableName) => { builder.Configure(c => c.Journal = new OracleTableJournal(()=>c.ConnectionManager, ()=>c.Log, schema, tableName)); return builder; })),
@@ -121,7 +122,20 @@ namespace DbUp.Tests
             // Automatically approve the change, make sure to check the result before committing 
             // configuration = configuration.UsingReporter((received, approved) => File.Copy(received, approved, true));
 
-            this.Assent(logger.Log, configuration);
+            if (!string.IsNullOrEmpty(approvalsFilePath))
+            {
+                this.Assent(logger.Log, configuration, filePath: approvalsFilePath);
+            }
+            else
+            {
+                this.Assent(logger.Log, configuration);
+            }
+            
+        }
+
+        protected void SetCallerFilePath([CallerFilePath] string path = null)
+        {
+            approvalsFilePath = path;
         }
 
         void UpgradeIsSuccessful()
@@ -148,7 +162,7 @@ namespace DbUp.Tests
         {
         }
 
-        Action Deploy(Func<SupportedDatabases, UpgradeEngineBuilder> deployTo, Func<UpgradeEngineBuilder, string, string, UpgradeEngineBuilder> addCustomNamedJournal)
+        protected Action Deploy(Func<SupportedDatabases, UpgradeEngineBuilder> deployTo, Func<UpgradeEngineBuilder, string, string, UpgradeEngineBuilder> addCustomNamedJournal)
         {
             return () =>
             {

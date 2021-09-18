@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>DbUp.Tests.SQLite</RootNamespace>
+
+    <IsPackable>false</IsPackable>
+
+    <AssemblyName>DbUp.Tests.SQLite</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="NSubstitute" Version="3.1.0" />
+    <PackageReference Include="Shouldly" Version="2.8.1" />
+    <PackageReference Include="Stub.System.Data.SQLite.Core.NetStandard" Version="1.0.115" />
+    <PackageReference Include="xunit" Version="2.4.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
+    <PackageReference Include="coverlet.collector" Version="1.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\dbup-core\dbup-core.csproj" />
+    <ProjectReference Include="..\dbup-sqlite\dbup-sqlite.csproj" />
+    <ProjectReference Include="..\dbup-tests\dbup-tests.csproj" />
+  </ItemGroup>
+
+</Project>
