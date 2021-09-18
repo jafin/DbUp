@@ -33,11 +33,6 @@ namespace DbUp.Tests
         CaptureLogsLogger logger;
         private string approvalsFilePath;
 
-        public DatabaseSupportTests()
-        {
-            SetCallerFilePath();
-        }
-
         [Fact]
         public virtual void VerifyBasicSupport()
         {
