@@ -4,8 +4,6 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>DbUp.Tests.SQLite</RootNamespace>
 
-    <IsPackable>false</IsPackable>
-
     <AssemblyName>DbUp.Tests.SQLite</AssemblyName>
   </PropertyGroup>
 
