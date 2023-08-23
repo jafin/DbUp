@@ -7,11 +7,15 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
+using System.Threading.Tasks;
 using Assent;
+using VerifyXunit;
+using VerifyTests;
 using Xunit;
 
 namespace DbUp.Tests.Common;
 
+[UsesVerify]
 public abstract class NoPublicApiChangesBase
 {
     private readonly Assembly assembly;
@@ -26,7 +30,7 @@ public abstract class NoPublicApiChangesBase
     }
 
     [Fact]
-    public void Run()
+    public Task Run()
     {
         var result = GetPublicApi(assembly);
 
@@ -44,8 +48,12 @@ public abstract class NoPublicApiChangesBase
 
         // Automatically approve the change, make sure to check the result before committing
         // config = config.UsingReporter((received, approved) => File.Copy(received, approved, true));
-
-        this.Assent(result, config, "NoPublicApiChanges", callerFilePath);
+        var x = callerFilePath ?? "";
+        var settings = new VerifySettings();
+        settings.UseDirectory("ApprovalFiles");
+        settings.UniqueForTargetFramework();
+        return Verifier.Verify(result, settings, sourceFile: x);
+        //this.Assent(result, config, "NoPublicApiChanges", callerFilePath);
     }
 
     static string GetPublicApi(Assembly assembly)

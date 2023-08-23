@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Assent;
 using Assent.Namers;
 using DbUp.Builder;
@@ -11,9 +13,12 @@ using DbUp.Tests.Common.RecordingDb;
 using Shouldly;
 using TestStack.BDDfy;
 using TestStack.BDDfy.Xunit;
+using VerifyTests;
+using VerifyXunit;
 
 namespace DbUp.Tests.Common
 {
+    [UsesVerify]
     public abstract class DatabaseSupportTestsBase
     {
         readonly string? parentFilePath;
@@ -42,7 +47,7 @@ namespace DbUp.Tests.Common
         );
 
         [BddfyFact]
-        public void VerifyBasicSupport()
+        public Task VerifyBasicSupport()
         {
             this
                 .Given(_ => DeployTo())
@@ -50,13 +55,14 @@ namespace DbUp.Tests.Common
                 .And(_ => SingleScriptExists())
                 .When(_ => UpgradeIsPerformed())
                 .Then(_ => UpgradeIsSuccessful())
-                .And(_ => CommandLogReflectsScript(nameof(VerifyBasicSupport)),
-                    "Command log matches expected steps")
+                // .And(_ => CommandLogReflectsScript(nameof(VerifyBasicSupport)),
+                //     "Command log matches expected steps")
                 .BDDfy();
+            return CommandLogReflectsScript(nameof(VerifyBasicSupport));
         }
 
         [BddfyFact]
-        public void VerifyVariableSubstitutions()
+        public Task VerifyVariableSubstitutions()
         {
             this
                 .Given(_ => DeployTo())
@@ -65,13 +71,15 @@ namespace DbUp.Tests.Common
                 .And(_ => VariableSubstitutionIsSetup())
                 .When(_ => UpgradeIsPerformed())
                 .Then(_ => UpgradeIsSuccessful())
-                .And(_ => CommandLogReflectsScript(nameof(VerifyVariableSubstitutions)),
-                    "Variables substituted correctly in command log")
+                // .And(_ => CommandLogReflectsScript(nameof(VerifyVariableSubstitutions)),
+                //     "Variables substituted correctly in command log")
                 .BDDfy();
+
+            return CommandLogReflectsScript(nameof(VerifyVariableSubstitutions));
         }
 
         [BddfyFact]
-        public void VerifyJournalCreationIfNameChanged()
+        public Task VerifyJournalCreationIfNameChanged()
         {
             this
                 .Given(_ => DeployTo())
@@ -80,9 +88,10 @@ namespace DbUp.Tests.Common
                 .And(_ => SingleScriptExists())
                 .When(_ => UpgradeIsPerformed())
                 .Then(_ => UpgradeIsSuccessful())
-                .And(_ => CommandLogReflectsScript(nameof(VerifyJournalCreationIfNameChanged)),
-                    "Command log matches expected steps")
+                // .And(_ => CommandLogReflectsScript(nameof(VerifyJournalCreationIfNameChanged)),
+                //     "Command log matches expected steps")
                 .BDDfy();
+            return CommandLogReflectsScript(nameof(VerifyJournalCreationIfNameChanged));
         }
 
 
@@ -97,7 +106,7 @@ namespace DbUp.Tests.Common
         }
 
 
-        void CommandLogReflectsScript(string testName)
+        Task CommandLogReflectsScript(string testName)
         {
             var configuration = new Configuration()
                 .UsingSanitiser(Scrubbers.ScrubDates)
@@ -106,7 +115,19 @@ namespace DbUp.Tests.Common
             // Automatically approve the change, make sure to check the result before committing
             // configuration = configuration.UsingReporter((received, approved) => File.Copy(received, approved, true));
 
-            this.Assent(logger.Log, configuration, testName, parentFilePath);
+            var settings = new VerifySettings();
+            settings.UseDirectory("ApprovalFiles");
+            settings.UniqueForTargetFramework();
+            settings.ScrubLinesWithReplace(x =>
+            {
+                Regex r = new Regex("applied=.*");
+                if (r.IsMatch(x))
+                    return Regex.Replace(x, "applied=.*", "applied=#DATE#");
+                return x;
+            });
+            return Verifier.Verify(logger.Log, settings, sourceFile: parentFilePath!);
+
+            //this.Assent(logger.Log, configuration, testName, parentFilePath);
         }
 
         void UpgradeIsSuccessful()
