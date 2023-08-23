@@ -16,15 +16,7 @@ namespace DbUp.Tests
         UpgradeEngineBuilder upgradeEngineBuilder;
         RecordingDbConnection testConnection;
         SqlScript[] scripts;
-        readonly CaptureLogsLogger logger;
-
-        public TransactionScenarios()
-        {
-            logger = new CaptureLogsLogger();
-
-            // Automatically approve the change, make sure to check the result before committing
-            // assentConfig = assentConfig.UsingReporter((received, approved) => File.Copy(received, approved, true));
-        }
+        readonly CaptureLogsLogger logger = new();
 
         [Fact]
         public Task UsingNoTransactionsScenario()
