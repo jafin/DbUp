@@ -1,4 +1,4 @@
-DB Operation: Open connection
+﻿DB Operation: Open connection
 Info:         Beginning database upgrade
 Info:         Checking whether journal table exists..
 DB Operation: Execute scalar command: select 1 from INFORMATION_SCHEMA.TABLES where TABLE_NAME = 'schemaversions'
@@ -23,7 +23,7 @@ DB Operation: Dispose command
 DB Operation: Create parameter
 Info:         DB Operation: Add parameter to command: =Script0001.sql
 DB Operation: Create parameter
-Info:         DB Operation: Add parameter to command: =<date>
+Info:         DB Operation: Add parameter to command: =23/08/2023 02:50:55
 DB Operation: Execute non query command: insert into "schemaversions" (ScriptName, Applied) values ($1, $2)
 DB Operation: Dispose command
 Info:         Upgrade successful

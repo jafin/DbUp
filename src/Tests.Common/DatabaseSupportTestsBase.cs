@@ -55,8 +55,6 @@ namespace DbUp.Tests.Common
                 .And(_ => SingleScriptExists())
                 .When(_ => UpgradeIsPerformed())
                 .Then(_ => UpgradeIsSuccessful())
-                // .And(_ => CommandLogReflectsScript(nameof(VerifyBasicSupport)),
-                //     "Command log matches expected steps")
                 .BDDfy();
             return CommandLogReflectsScript(nameof(VerifyBasicSupport));
         }
@@ -71,8 +69,6 @@ namespace DbUp.Tests.Common
                 .And(_ => VariableSubstitutionIsSetup())
                 .When(_ => UpgradeIsPerformed())
                 .Then(_ => UpgradeIsSuccessful())
-                // .And(_ => CommandLogReflectsScript(nameof(VerifyVariableSubstitutions)),
-                //     "Variables substituted correctly in command log")
                 .BDDfy();
 
             return CommandLogReflectsScript(nameof(VerifyVariableSubstitutions));
@@ -88,8 +84,6 @@ namespace DbUp.Tests.Common
                 .And(_ => SingleScriptExists())
                 .When(_ => UpgradeIsPerformed())
                 .Then(_ => UpgradeIsSuccessful())
-                // .And(_ => CommandLogReflectsScript(nameof(VerifyJournalCreationIfNameChanged)),
-                //     "Command log matches expected steps")
                 .BDDfy();
             return CommandLogReflectsScript(nameof(VerifyJournalCreationIfNameChanged));
         }
@@ -117,7 +111,7 @@ namespace DbUp.Tests.Common
 
             var settings = new VerifySettings();
             settings.UseDirectory("ApprovalFiles");
-            settings.UniqueForTargetFramework();
+            //settings.UniqueForTargetFramework();
             settings.ScrubLinesWithReplace(x =>
             {
                 Regex r = new Regex("applied=.*");
@@ -126,8 +120,6 @@ namespace DbUp.Tests.Common
                 return x;
             });
             return Verifier.Verify(logger.Log, settings, sourceFile: parentFilePath!);
-
-            //this.Assent(logger.Log, configuration, testName, parentFilePath);
         }
 
         void UpgradeIsSuccessful()
