@@ -5,10 +5,8 @@ using DbUp.Tests.Common;
 using DbUp.Tests.Common.RecordingDb;
 using DbUp.Tests.TestInfrastructure;
 using TestStack.BDDfy;
-using VerifyTests;
 using VerifyXunit;
 using Xunit;
-using Scrubbers = DbUp.Tests.Common.Scrubbers;
 
 namespace DbUp.Tests
 {
@@ -104,27 +102,27 @@ namespace DbUp.Tests
 
         Task ShouldStopExecution(string testName)
         {
-            return Verifier.Verify(logger.Log, GetVerifySettings());
+            return Verifier.Verify(logger.Log, VerifyHelper.GetVerifySettings());
         }
 
         Task ShouldRollbackFailedScriptAndStopExecution(string testName)
         {
-            return Verifier.Verify(logger.Log, GetVerifySettings());
+            return Verifier.Verify(logger.Log, VerifyHelper.GetVerifySettings());
         }
 
         Task ShouldExecuteAllScriptsInASingleTransaction(string testName)
         {
-            return Verifier.Verify(logger.Log, GetVerifySettings());
+            return Verifier.Verify(logger.Log, VerifyHelper.GetVerifySettings());
         }
 
         Task ShouldHaveExecutedEachScriptInATransaction(string testName)
         {
-            return Verifier.Verify(logger.Log, GetVerifySettings());
+            return Verifier.Verify(logger.Log, VerifyHelper.GetVerifySettings());
         }
 
         Task ShouldExecuteScriptsWithoutUsingATransaction(string testName)
         {
-            return Verifier.Verify(logger.Log, GetVerifySettings());
+            return Verifier.Verify(logger.Log, VerifyHelper.GetVerifySettings());
         }
 
         void DbUpSetupToUseSingleTransaction()
@@ -166,14 +164,6 @@ namespace DbUp.Tests
                .LogTo(logger)
                .Build()
                .PerformUpgrade();
-        }
-
-        private VerifySettings GetVerifySettings()
-        {
-            VerifySettings settings = new VerifySettings();
-            settings.UseDirectory("ApprovalFiles");
-            settings.ScrubLinesWithReplace(Scrubbers.ScrubDates);
-            return settings;
         }
     }
 }

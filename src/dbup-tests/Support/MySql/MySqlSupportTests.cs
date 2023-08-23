@@ -2,10 +2,8 @@
 using DbUp.Tests.Common;
 using DbUp.Tests.Common.RecordingDb;
 using Shouldly;
-using VerifyTests;
 using VerifyXunit;
 using Xunit;
-using Scrubbers = DbUp.Tests.Common.Scrubbers;
 
 namespace DbUp.Tests.Support.MySql
 {
@@ -42,15 +40,7 @@ END$$").Build();
             var result = upgrader.PerformUpgrade();
 
             result.Successful.ShouldBe(true);
-            return Verifier.Verify(logger.Log, GetVerifySettings());
-        }
-
-        private VerifySettings GetVerifySettings()
-        {
-            VerifySettings settings = new();
-            settings.UseDirectory("ApprovalFiles");
-            settings.ScrubLinesWithReplace(Scrubbers.ScrubDates);
-            return settings;
+            return Verifier.Verify(logger.Log, VerifyHelper.GetVerifySettings());
         }
     }
 }

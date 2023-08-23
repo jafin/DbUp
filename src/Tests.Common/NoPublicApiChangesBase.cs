@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -8,7 +7,6 @@ using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using VerifyXunit;
-using VerifyTests;
 using Xunit;
 
 namespace DbUp.Tests.Common;
@@ -29,15 +27,7 @@ public abstract class NoPublicApiChangesBase
     public Task Run()
     {
         var result = GetPublicApi(assembly);
-        return Verifier.Verify(result, GetVerifySettings(), sourceFile: callerFilePath!);
-    }
-
-    private VerifySettings GetVerifySettings()
-    {
-        var settings = new VerifySettings();
-        settings.UseDirectory("ApprovalFiles");
-        settings.UniqueForTargetFramework();
-        return settings;
+        return Verifier.Verify(result, VerifyHelper.GetVerifySettings(uniqueForFramework:true), sourceFile: callerFilePath!);
     }
 
     static string GetPublicApi(Assembly assembly)
