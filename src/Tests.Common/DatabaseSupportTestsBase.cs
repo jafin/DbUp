@@ -8,7 +8,6 @@ using DbUp.Tests.Common.RecordingDb;
 using Shouldly;
 using TestStack.BDDfy;
 using TestStack.BDDfy.Xunit;
-using VerifyTests;
 using VerifyXunit;
 
 namespace DbUp.Tests.Common
@@ -20,28 +19,18 @@ namespace DbUp.Tests.Common
         readonly IConnectionFactory testConnectionFactory;
         readonly List<SqlScript> scripts = new();
         readonly RecordingDbConnection recordingConnection;
-        readonly CaptureLogsLogger logger = new CaptureLogsLogger();
+        readonly CaptureLogsLogger logger = new ();
 
         DatabaseUpgradeResult? result;
         UpgradeEngineBuilder? upgradeEngineBuilder;
-        VerifySettings settings = new ();
-        
-
 
         public DatabaseSupportTestsBase([CallerFilePath] string? parentFilePath = null)
         {
             this.parentFilePath = parentFilePath;
             testConnectionFactory = new DelegateConnectionFactory(_ => recordingConnection);
             recordingConnection = new RecordingDbConnection(logger, "SchemaVersions");
-            ConfigureVerify();
         }
-
-        private void ConfigureVerify()
-        {
-            settings.UseDirectory("ApprovalFiles");
-            settings.ScrubLinesWithReplace(Scrubbers.ScrubDates);
-        }
-
+     
         protected abstract UpgradeEngineBuilder DeployTo(SupportedDatabases to);
 
         protected abstract UpgradeEngineBuilder AddCustomNamedJournalToBuilder(
@@ -105,7 +94,7 @@ namespace DbUp.Tests.Common
 
         Task CommandLogReflectsScript(string testName)
         {
-            return Verifier.Verify(logger.Log, settings, sourceFile: parentFilePath!);
+            return Verifier.Verify(logger.Log, VerifyHelper.GetVerifySettings(), sourceFile: parentFilePath!);
         }
 
         void UpgradeIsSuccessful()
