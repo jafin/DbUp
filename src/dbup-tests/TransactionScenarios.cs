@@ -1,24 +1,24 @@
-﻿using Assent;
-using Assent.Namers;
+﻿using System.Threading.Tasks;
 using DbUp.Builder;
 using DbUp.Engine;
 using DbUp.Tests.Common;
 using DbUp.Tests.Common.RecordingDb;
 using DbUp.Tests.TestInfrastructure;
 using TestStack.BDDfy;
+using VerifyTests;
+using VerifyXunit;
 using Xunit;
+using Scrubbers = DbUp.Tests.Common.Scrubbers;
 
 namespace DbUp.Tests
 {
+    [UsesVerify]
     public class TransactionScenarios
     {
         UpgradeEngineBuilder upgradeEngineBuilder;
         RecordingDbConnection testConnection;
         SqlScript[] scripts;
         readonly CaptureLogsLogger logger;
-        readonly Configuration assentConfig = new Configuration()
-            .UsingNamer(new SubdirectoryNamer("ApprovalFiles"))
-            .UsingSanitiser(Scrubbers.ScrubDates);
 
         public TransactionScenarios()
         {
@@ -29,63 +29,64 @@ namespace DbUp.Tests
         }
 
         [Fact]
-        public void UsingNoTransactionsScenario()
+        public Task UsingNoTransactionsScenario()
         {
             this
                 .Given(_ => DbUpSetupToNotUseTransactions())
                 .When(_ => UpgradeIsPerformedExecutingTwoScripts())
-                .Then(_ => ShouldExecuteScriptsWithoutUsingATransaction(nameof(UsingNoTransactionsScenario)))
                 .BDDfy();
+
+            return ShouldExecuteScriptsWithoutUsingATransaction(nameof(UsingNoTransactionsScenario));
         }
 
         [Fact]
-        public void UsingNoTransactionsScenarioScriptFails()
+        public Task UsingNoTransactionsScenarioScriptFails()
         {
             this
                 .Given(_ => DbUpSetupToNotUseTransactions())
                 .When(_ => UpgradeIsPerformedWithFirstOfTwoScriptsFails())
-                .Then(_ => ShouldStopExecution(nameof(UsingNoTransactionsScenarioScriptFails)))
                 .BDDfy();
+            return ShouldStopExecution(nameof(UsingNoTransactionsScenarioScriptFails));
         }
 
         [Fact]
-        public void UsingTransactionPerScriptScenarioSuccess()
+        public Task UsingTransactionPerScriptScenarioSuccess()
         {
             this
                 .Given(_ => DbUpSetupToUseTransactionPerScript())
                 .When(_ => UpgradeIsPerformedExecutingTwoScripts())
-                .Then(_ => ShouldHaveExecutedEachScriptInATransaction(nameof(UsingTransactionPerScriptScenarioSuccess)))
                 .BDDfy();
+            return ShouldHaveExecutedEachScriptInATransaction(nameof(UsingTransactionPerScriptScenarioSuccess));
         }
 
         [Fact]
-        public void UsingTransactionPerScriptScenarioScriptFails()
+        public Task UsingTransactionPerScriptScenarioScriptFails()
         {
             this
                 .Given(_ => DbUpSetupToUseTransactionPerScript())
                 .When(_ => UpgradeIsPerformedWithFirstOfTwoScriptsFails())
-                .Then(_ => ShouldRollbackFailedScriptAndStopExecution(nameof(UsingTransactionPerScriptScenarioScriptFails)))
                 .BDDfy();
+            return ShouldRollbackFailedScriptAndStopExecution(nameof(UsingTransactionPerScriptScenarioScriptFails));
         }
 
         [Fact]
-        public void UsingSingleTransactionScenarioSuccess()
+        public Task UsingSingleTransactionScenarioSuccess()
         {
             this
                 .Given(_ => DbUpSetupToUseSingleTransaction())
                 .When(_ => UpgradeIsPerformedExecutingTwoScripts())
-                .Then(_ => ShouldExecuteAllScriptsInASingleTransaction(nameof(UsingSingleTransactionScenarioSuccess)))
                 .BDDfy();
+            return ShouldExecuteAllScriptsInASingleTransaction(nameof(UsingSingleTransactionScenarioSuccess));
         }
 
         [Fact]
-        public void UsingSingleTransactionScenarioSuccessScriptFails()
+        public Task UsingSingleTransactionScenarioSuccessScriptFails()
         {
             this
                 .Given(_ => DbUpSetupToUseSingleTransaction())
                 .When(_ => UpgradeIsPerformedWithFirstOfTwoScriptsFails())
-                .Then(_ => ShouldRollbackFailedScriptAndStopExecution(nameof(UsingSingleTransactionScenarioSuccessScriptFails)))
                 .BDDfy();
+            return ShouldRollbackFailedScriptAndStopExecution(nameof(UsingSingleTransactionScenarioSuccessScriptFails));
         }
 
         void UpgradeIsPerformedWithFirstOfTwoScriptsFails()
@@ -101,29 +102,29 @@ namespace DbUp.Tests
                 .PerformUpgrade();
         }
 
-        void ShouldStopExecution(string testName)
+        Task ShouldStopExecution(string testName)
         {
-            this.Assent(logger.Log, assentConfig, testName);
+            return Verifier.Verify(logger.Log, GetVerifySettings());
         }
 
-        void ShouldRollbackFailedScriptAndStopExecution(string testName)
+        Task ShouldRollbackFailedScriptAndStopExecution(string testName)
         {
-            this.Assent(logger.Log, assentConfig, testName);
+            return Verifier.Verify(logger.Log, GetVerifySettings());
         }
 
-        void ShouldExecuteAllScriptsInASingleTransaction(string testName)
+        Task ShouldExecuteAllScriptsInASingleTransaction(string testName)
         {
-            this.Assent(logger.Log, assentConfig, testName);
+            return Verifier.Verify(logger.Log, GetVerifySettings());
         }
 
-        void ShouldHaveExecutedEachScriptInATransaction(string testName)
+        Task ShouldHaveExecutedEachScriptInATransaction(string testName)
         {
-            this.Assent(logger.Log, assentConfig, testName);
+            return Verifier.Verify(logger.Log, GetVerifySettings());
         }
 
-        void ShouldExecuteScriptsWithoutUsingATransaction(string testName)
+        Task ShouldExecuteScriptsWithoutUsingATransaction(string testName)
         {
-            this.Assent(logger.Log, assentConfig, testName);
+            return Verifier.Verify(logger.Log, GetVerifySettings());
         }
 
         void DbUpSetupToUseSingleTransaction()
@@ -165,6 +166,14 @@ namespace DbUp.Tests
                .LogTo(logger)
                .Build()
                .PerformUpgrade();
+        }
+
+        private VerifySettings GetVerifySettings()
+        {
+            VerifySettings settings = new VerifySettings();
+            settings.UseDirectory("ApprovalFiles");
+            settings.ScrubLinesWithReplace(Scrubbers.ScrubDates);
+            return settings;
         }
     }
 }

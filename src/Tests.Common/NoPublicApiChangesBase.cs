@@ -4,11 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
-using Assent;
 using VerifyXunit;
 using VerifyTests;
 using Xunit;
@@ -19,13 +17,11 @@ namespace DbUp.Tests.Common;
 public abstract class NoPublicApiChangesBase
 {
     private readonly Assembly assembly;
-    private readonly bool differByFramework;
     private readonly string? callerFilePath;
 
-    public NoPublicApiChangesBase(Assembly assembly, bool differByFramework = false, [CallerFilePath] string? callerFilePath = null)
+    public NoPublicApiChangesBase(Assembly assembly, [CallerFilePath] string? callerFilePath = null)
     {
         this.assembly = assembly;
-        this.differByFramework = differByFramework;
         this.callerFilePath = callerFilePath;
     }
 
@@ -33,27 +29,15 @@ public abstract class NoPublicApiChangesBase
     public Task Run()
     {
         var result = GetPublicApi(assembly);
+        return Verifier.Verify(result, GetVerifySettings(), sourceFile: callerFilePath!);
+    }
 
-#if NETFRAMEWORK
-            const string framework = "netfx";
-#else
-        const string framework = "netcore"; // "Core" is no longer a thing but maintain the identifier for compatibility.
-#endif
-        var approvalPostfix = differByFramework ? $".{framework}" : "";
-
-        var config = new Configuration()
-            .UsingExtension("cs")
-            .UsingNamer(m => Path.Combine(Path.GetDirectoryName(m.FilePath), "ApprovalFiles",
-                assembly.GetName().Name + approvalPostfix));
-
-        // Automatically approve the change, make sure to check the result before committing
-        // config = config.UsingReporter((received, approved) => File.Copy(received, approved, true));
-        var x = callerFilePath ?? "";
+    private VerifySettings GetVerifySettings()
+    {
         var settings = new VerifySettings();
         settings.UseDirectory("ApprovalFiles");
         settings.UniqueForTargetFramework();
-        return Verifier.Verify(result, settings, sourceFile: x);
-        //this.Assent(result, config, "NoPublicApiChanges", callerFilePath);
+        return settings;
     }
 
     static string GetPublicApi(Assembly assembly)

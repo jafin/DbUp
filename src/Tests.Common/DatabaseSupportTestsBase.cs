@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Assent;
-using Assent.Namers;
 using DbUp.Builder;
 using DbUp.Engine;
 using DbUp.Engine.Transactions;
@@ -29,6 +24,8 @@ namespace DbUp.Tests.Common
 
         DatabaseUpgradeResult? result;
         UpgradeEngineBuilder? upgradeEngineBuilder;
+        VerifySettings settings = new ();
+        
 
 
         public DatabaseSupportTestsBase([CallerFilePath] string? parentFilePath = null)
@@ -36,6 +33,13 @@ namespace DbUp.Tests.Common
             this.parentFilePath = parentFilePath;
             testConnectionFactory = new DelegateConnectionFactory(_ => recordingConnection);
             recordingConnection = new RecordingDbConnection(logger, "SchemaVersions");
+            ConfigureVerify();
+        }
+
+        private void ConfigureVerify()
+        {
+            settings.UseDirectory("ApprovalFiles");
+            settings.ScrubLinesWithReplace(Scrubbers.ScrubDates);
         }
 
         protected abstract UpgradeEngineBuilder DeployTo(SupportedDatabases to);
@@ -99,26 +103,8 @@ namespace DbUp.Tests.Common
             upgradeEngineBuilder = AddCustomNamedJournalToBuilder(upgradeEngineBuilder!, "test", "TestSchemaVersions");
         }
 
-
         Task CommandLogReflectsScript(string testName)
         {
-            var configuration = new Configuration()
-                .UsingSanitiser(Scrubbers.ScrubDates)
-                .UsingNamer(new SubdirectoryNamer("ApprovalFiles"));
-
-            // Automatically approve the change, make sure to check the result before committing
-            // configuration = configuration.UsingReporter((received, approved) => File.Copy(received, approved, true));
-
-            var settings = new VerifySettings();
-            settings.UseDirectory("ApprovalFiles");
-            //settings.UniqueForTargetFramework();
-            settings.ScrubLinesWithReplace(x =>
-            {
-                Regex r = new Regex("applied=.*");
-                if (r.IsMatch(x))
-                    return Regex.Replace(x, "applied=.*", "applied=#DATE#");
-                return x;
-            });
             return Verifier.Verify(logger.Log, settings, sourceFile: parentFilePath!);
         }
 
