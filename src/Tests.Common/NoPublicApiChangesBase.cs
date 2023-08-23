@@ -27,7 +27,7 @@ public abstract class NoPublicApiChangesBase
     public Task Run()
     {
         var result = GetPublicApi(assembly);
-        return Verifier.Verify(result, VerifyHelper.GetVerifySettings(uniqueForFramework:true), sourceFile: callerFilePath!);
+        return Verifier.Verify(result, "cs", VerifyHelper.GetVerifySettings(uniqueForFramework:true), sourceFile: callerFilePath!);
     }
 
     static string GetPublicApi(Assembly assembly)
